@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kombucha_app/datamanager.dart';
+import 'package:kombucha_app/pages/calculator_page.dart';
 import 'package:kombucha_app/pages/ingredients_page.dart';
+
+import 'pages/receipe_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +34,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var dataManager = DataManager();
   var selectedIndex = 0;
 
   @override
@@ -41,10 +46,10 @@ class _MyHomePageState extends State<MyHomePage> {
         currentPage = const IngredientsPage();
         break;
       case 1:
-        currentPage = const Text("Receipe!!");
+        currentPage = ReceipePage(dataManager: dataManager);
         break;
       case 2:
-        currentPage = const Text("Proportions");
+        currentPage = const CalculatorPage();
         break;
     }
 
