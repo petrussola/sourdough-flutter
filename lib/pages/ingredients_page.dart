@@ -48,12 +48,12 @@ class Ingredient extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.headline4,
+                style: Theme.of(context).textTheme.headline5,
               ),
             ),
             Text(
               description,
-              style: Theme.of(context).textTheme.headline6,
+              style: const TextStyle(fontSize: 16.0, height: 1.5),
             ),
           ],
         ),

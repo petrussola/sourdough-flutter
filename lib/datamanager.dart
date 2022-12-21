@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'datamodel.dart';
 import 'package:http/http.dart' as http;
 
+import 'envvariables.dart';
+
 class DataManager {
   List<ReceipeStep>? _receipe;
 
   fetchReceipe() async {
-    const url = "https://petrussola.github.io/kombucha-api/receipe.json";
+    var url = apiUrl;
 
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {

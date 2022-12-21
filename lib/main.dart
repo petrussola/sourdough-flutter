@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
       ),
-      home: const MyHomePage(title: 'Kombucha Toolkit'),
+      home: const MyHomePage(title: 'Kombucha Making Toolkit'),
     );
   }
 }
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calculate),
-            label: "Proportions calculator",
+            label: "Proportions",
           ),
         ],
         currentIndex: selectedIndex,

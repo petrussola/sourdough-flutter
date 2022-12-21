@@ -57,10 +57,9 @@ class ReceipeItem extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            "${step.step}. ${step.description}",
-            style: Theme.of(context).textTheme.headline6,
-          ),
+          child: Text("${step.step}. ${step.description}",
+              // style: Theme.of(context).textTheme.bodyMedium,
+              style: const TextStyle(fontSize: 16.0, height: 1.5)),
         ),
         if (!isLastStep) const Divider()
       ],
