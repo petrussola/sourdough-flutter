@@ -1,0 +1,1 @@
+This app does not handle user data.
