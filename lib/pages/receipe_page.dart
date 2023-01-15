@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kombucha_app/datamanager.dart';
 import 'package:kombucha_app/datamodel.dart';
+import 'dart:developer' as developer;
+import 'dart:convert';
 
 class ReceipePage extends StatelessWidget {
   final DataManager dataManager;
@@ -35,6 +37,10 @@ class Receipe extends StatelessWidget {
                   }));
             } else {
               if (snapshot.hasError) {
+                developer.log(
+                  'Failed to fetch receipe data',
+                  error: jsonEncode(snapshot.error),
+                );
                 return const Text('There was an error');
               } else {
                 return const CircularProgressIndicator();
