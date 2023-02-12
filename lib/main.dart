@@ -43,7 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var dataManager = DataManager();
   var selectedIndex = 0;
   BannerAd? _anchoredAdaptiveAd;
-  bool _isLoaded = false;
+  bool _isAdLoaded = false;
 
   @override
   void didChangeDependencies() {
@@ -74,7 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // When the ad is loaded, get the ad size and use it to set
             // the height of the ad container.
             _anchoredAdaptiveAd = ad as BannerAd;
-            _isLoaded = true;
+            _isAdLoaded = true;
           });
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
@@ -127,73 +127,92 @@ class _MyHomePageState extends State<MyHomePage> {
     final AdWidget adWidgetDrawer = AdWidget(ad: adBannerDrawer);
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text(pageTitle),
+      appBar: AppBar(
+        title: Text(pageTitle),
+      ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.green,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32.0),
+                child: Text(widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    )),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  DrawerListItem(
+                    index: 0,
+                    icon: Icons.restaurant,
+                    name: "Ingredients",
+                    onTap: (index) => {
+                      tapHandler(index, context),
+                    },
+                  ),
+                  DrawerListItem(
+                    index: 1,
+                    icon: Icons.menu_book,
+                    name: "Receipe",
+                    onTap: (index) => {
+                      tapHandler(index, context),
+                    },
+                  ),
+                  DrawerListItem(
+                    index: 2,
+                    icon: Icons.calculate,
+                    name: "Proportions",
+                    onTap: (index) => {
+                      tapHandler(index, context),
+                    },
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: adBannerDrawer.size.width.toDouble(),
+              height: adBannerDrawer.size.height.toDouble(),
+              child: adWidgetDrawer,
+            ),
+          ],
         ),
-        drawer: Drawer(
-          child: Column(
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32.0),
-                  child: Text(widget.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      )),
-                ),
+      ),
+      bottomNavigationBar: _anchoredAdaptiveAd != null && _isAdLoaded
+          ? Container(
+              alignment: Alignment.center,
+              width: _anchoredAdaptiveAd!.size.width.toDouble(),
+              height: _anchoredAdaptiveAd!.size.height.toDouble(),
+              child: AdWidget(ad: _anchoredAdaptiveAd!),
+            )
+          : null,
+      body: _isAdLoaded
+          ? currentPage
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Welcome to the Kombucha Making Toolkit app!',
+                    style: Theme.of(context).textTheme.headline5,
+                    textAlign: TextAlign.center,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16.0),
+                    child: CircularProgressIndicator(),
+                  )
+                ],
               ),
-              Expanded(
-                child: Column(
-                  children: [
-                    DrawerListItem(
-                      index: 0,
-                      icon: Icons.restaurant,
-                      name: "Ingredients",
-                      onTap: (index) => {
-                        tapHandler(index, context),
-                      },
-                    ),
-                    DrawerListItem(
-                      index: 1,
-                      icon: Icons.menu_book,
-                      name: "Receipe",
-                      onTap: (index) => {
-                        tapHandler(index, context),
-                      },
-                    ),
-                    DrawerListItem(
-                      index: 2,
-                      icon: Icons.calculate,
-                      name: "Proportions",
-                      onTap: (index) => {
-                        tapHandler(index, context),
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                alignment: Alignment.center,
-                width: adBannerDrawer.size.width.toDouble(),
-                height: adBannerDrawer.size.height.toDouble(),
-                child: adWidgetDrawer,
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: _anchoredAdaptiveAd != null && _isLoaded
-            ? Container(
-                alignment: Alignment.center,
-                width: _anchoredAdaptiveAd!.size.width.toDouble(),
-                height: _anchoredAdaptiveAd!.size.height.toDouble(),
-                child: AdWidget(ad: _anchoredAdaptiveAd!),
-              )
-            : null,
-        body: currentPage);
+            ),
+    );
   }
 }
 
