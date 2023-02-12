@@ -32,6 +32,15 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// https://medium.com/flutter-community/how-to-setup-dart-define-for-keys-and-secrets-on-android-and-ios-in-flutter-apps-4f28a10c4b6c
+def dartEnvironmentVariables = []
+if (project.hasProperty('dart-defines')) {
+    dartEnvironmentVariables = project.property('dart-defines').split(',').collectEntries { entry ->
+            def pair = new String(entry.decodeBase64(), 'UTF-8').split('=')
+            [(pair.first()): pair.last()]
+        }
+}
+
 android {
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
@@ -54,10 +63,11 @@ android {
         applicationId "com.kombucha_making_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 19
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        versionName 
+        manifestPlaceholders['APPLICATION_ID'] = dartEnvironmentVariables.APPLICATION_ID
     }
 
    signingConfigs {
@@ -85,4 +95,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.google.android.gms:play-services-ads:21.4.0'
 }
