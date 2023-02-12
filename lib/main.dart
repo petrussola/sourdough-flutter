@@ -43,15 +43,25 @@ class _MyHomePageState extends State<MyHomePage> {
   var dataManager = DataManager();
   var selectedIndex = 0;
   BannerAd? _anchoredAdaptiveAd;
-  bool _isAdLoaded = false;
+  BannerAd? _adBannerDrawer;
+  bool _isBottomBannerAdLoaded = false;
+  bool _isDrawerAdLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadDrawerAd();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadAd();
+
+    _loadBottomBannerAd();
   }
 
-  Future<void> _loadAd() async {
+  Future<void> _loadBottomBannerAd() async {
     // Get an AnchoredAdaptiveBannerAdSize before loading the ad.
     final AnchoredAdaptiveBannerAdSize? size =
         await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
@@ -74,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
             // When the ad is loaded, get the ad size and use it to set
             // the height of the ad container.
             _anchoredAdaptiveAd = ad as BannerAd;
-            _isAdLoaded = true;
+            _isBottomBannerAdLoaded = true;
           });
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
@@ -82,7 +92,35 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     );
-    return _anchoredAdaptiveAd!.load();
+
+    _anchoredAdaptiveAd!.load();
+
+    return;
+  }
+
+  _loadDrawerAd() {
+    _adBannerDrawer = BannerAd(
+      adUnitId: const String.fromEnvironment("AD_BANNER_DRAWER_ID",
+          defaultValue: bannerAdTestId),
+      size: AdSize.mediumRectangle,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          setState(
+            () {
+              // When the ad is loaded, get the ad size and use it to set
+              // the height of the ad container.
+              _adBannerDrawer = ad as BannerAd;
+              _isDrawerAdLoaded = true;
+            },
+          );
+        },
+      ),
+    );
+
+    _adBannerDrawer?.load();
+
+    return;
   }
 
   @override
@@ -114,18 +152,6 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.pop(context);
     }
 
-    final BannerAd adBannerDrawer = BannerAd(
-      adUnitId: const String.fromEnvironment("AD_BANNER_DRAWER_ID",
-          defaultValue: bannerAdTestId),
-      size: AdSize.mediumRectangle,
-      request: const AdRequest(),
-      listener: const BannerAdListener(),
-    );
-
-    adBannerDrawer.load();
-
-    final AdWidget adWidgetDrawer = AdWidget(ad: adBannerDrawer);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(pageTitle),
@@ -139,11 +165,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32.0),
-                child: Text(widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    )),
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                ),
               ),
             ),
             Expanded(
@@ -176,24 +204,30 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-            Container(
-              alignment: Alignment.center,
-              width: adBannerDrawer.size.width.toDouble(),
-              height: adBannerDrawer.size.height.toDouble(),
-              child: adWidgetDrawer,
-            ),
+            if (_adBannerDrawer != null && _isDrawerAdLoaded)
+              Container(
+                alignment: Alignment.center,
+                width: _adBannerDrawer?.size.width.toDouble(),
+                height: _adBannerDrawer?.size.height.toDouble(),
+                child: AdWidget(
+                  ad: _adBannerDrawer!,
+                ),
+              ),
           ],
         ),
       ),
-      bottomNavigationBar: _anchoredAdaptiveAd != null && _isAdLoaded
-          ? Container(
-              alignment: Alignment.center,
-              width: _anchoredAdaptiveAd!.size.width.toDouble(),
-              height: _anchoredAdaptiveAd!.size.height.toDouble(),
-              child: AdWidget(ad: _anchoredAdaptiveAd!),
-            )
-          : null,
-      body: _isAdLoaded
+      bottomNavigationBar:
+          _anchoredAdaptiveAd != null && _isBottomBannerAdLoaded
+              ? Container(
+                  alignment: Alignment.center,
+                  width: _anchoredAdaptiveAd!.size.width.toDouble(),
+                  height: _anchoredAdaptiveAd!.size.height.toDouble(),
+                  child: AdWidget(
+                    ad: _anchoredAdaptiveAd!,
+                  ),
+                )
+              : null,
+      body: _isBottomBannerAdLoaded
           ? currentPage
           : Padding(
               padding: const EdgeInsets.all(8.0),
@@ -235,7 +269,9 @@ class DrawerListItem extends StatelessWidget {
       leading: Icon(icon),
       title: Text(
         name,
-        style: const TextStyle(fontSize: 16),
+        style: const TextStyle(
+          fontSize: 16,
+        ),
       ),
       onTap: () => onTap(index),
     );
