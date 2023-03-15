@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:kombucha_app/datamanager.dart';
+import 'package:sourdough_app/datamanager.dart';
 
-import 'package:kombucha_app/pages/calculator_page.dart';
-import 'package:kombucha_app/pages/ingredients_page.dart';
+import 'package:sourdough_app/pages/calculator_page.dart';
+import 'package:sourdough_app/pages/starter_page.dart';
 
 import 'envvariables.dart';
-import 'pages/receipe_page.dart';
+import 'pages/bread_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +21,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kombucha Club',
+      title: 'Sourdough Making Toolkit',
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const MyHomePage(title: 'Kombucha Making Toolkit'),
+      home: const MyHomePage(title: 'Sourdough Making Toolkit'),
     );
   }
 }
@@ -138,11 +138,11 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (selectedIndex) {
       case 0:
         currentPage = const IngredientsPage();
-        pageTitle = "Ingredients";
+        pageTitle = "Starter receipe";
         break;
       case 1:
         currentPage = ReceipePage(dataManager: dataManager);
-        pageTitle = "Receipe";
+        pageTitle = "Bread receipe";
         break;
       case 2:
         currentPage = const CalculatorPage();
@@ -187,7 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   DrawerListItem(
                     index: 0,
                     icon: Icons.restaurant,
-                    name: "Ingredients",
+                    name: "Starter receipe",
                     onTap: (index) => {
                       tapHandler(index, context),
                     },
@@ -195,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   DrawerListItem(
                     index: 1,
                     icon: Icons.menu_book,
-                    name: "Receipe",
+                    name: "Bread receipe",
                     onTap: (index) => {
                       tapHandler(index, context),
                     },
@@ -244,8 +244,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Welcome to the Kombucha Making Toolkit app!',
-                      style: Theme.of(context).textTheme.headline5,
+                      'Welcome to the Sourdough Making Toolkit app!',
+                      style: Theme.of(context).textTheme.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
                   ),

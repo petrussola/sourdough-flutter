@@ -1,6 +1,6 @@
 {
-    "name": "kombucha_app",
-    "short_name": "kombucha_app",
+    "name": "sourdough_app",
+    "short_name": "sourdough_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.kombucha_app">
+    package="com.example.sourdough_app">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="Kombucha Making Toolkit"
+        android:label="Sourdough Making Toolkit"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

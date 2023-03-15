@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:kombucha_app/datamanager.dart';
-import 'package:kombucha_app/datamodel.dart';
+import 'package:sourdough_app/datamanager.dart';
+import 'package:sourdough_app/datamodel.dart';
 import 'dart:developer' as developer;
 import 'dart:convert';
 
@@ -52,7 +52,7 @@ class Receipe extends StatelessWidget {
 }
 
 class ReceipeItem extends StatelessWidget {
-  final ReceipeStep step;
+  final ReceipeType step;
   final bool isLastStep;
 
   const ReceipeItem({super.key, required this.step, required this.isLastStep});

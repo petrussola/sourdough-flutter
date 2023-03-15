@@ -41,7 +41,7 @@ class _CalculatorPageState extends State<CalculatorPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("$_litres ${_litres > 1 ? "litres" : "litre"} of water",
-                  style: Theme.of(context).textTheme.headline4),
+                  style: Theme.of(context).textTheme.headlineMedium),
             ],
           ),
           Slider.adaptive(
