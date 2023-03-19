@@ -6,26 +6,28 @@ import 'package:http/http.dart' as http;
 import 'envvariables.dart';
 
 class DataManager {
-  List<ReceipeStep>? _receipe;
+  List<ReceipeType>? _receipes;
 
-  fetchReceipe() async {
+  fetchReceipes() async {
     var url = apiUrl;
 
     var response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
+      _receipes = [];
+
       var body = response.body;
-      _receipe = [];
       var decodedData = jsonDecode(body) as List<dynamic>;
+
       for (var json in decodedData) {
-        _receipe?.add(ReceipeStep.fromJson(json));
+        _receipes?.add(ReceipeType.fromJson(json));
       }
     }
   }
 
-  Future<List<ReceipeStep>> getReceipe() async {
-    if (_receipe == null) {
-      await fetchReceipe();
+  Future<List<ReceipeType>> getReceipes() async {
+    if (_receipes == null) {
+      await fetchReceipes();
     }
-    return _receipe!;
+    return _receipes!;
   }
 }

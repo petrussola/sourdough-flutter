@@ -23,16 +23,16 @@ class Receipe extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: FutureBuilder(
-          future: dataManager.getReceipe(),
+          future: dataManager.getReceipes(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              var steps = snapshot.data!;
+              var receipes = snapshot.data!;
               return ListView.builder(
-                  itemCount: steps.length,
+                  itemCount: receipes[1].steps.length,
                   itemBuilder: ((context, index) {
                     return ReceipeItem(
-                      step: steps[index],
-                      isLastStep: steps.length - 1 == index,
+                      step: receipes[1].steps[index],
+                      isLastStep: receipes[1].steps.length - 1 == index,
                     );
                   }));
             } else {
@@ -52,7 +52,7 @@ class Receipe extends StatelessWidget {
 }
 
 class ReceipeItem extends StatelessWidget {
-  final ReceipeType step;
+  final ReceipeStep step;
   final bool isLastStep;
 
   const ReceipeItem({super.key, required this.step, required this.isLastStep});
@@ -63,9 +63,10 @@ class ReceipeItem extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text("${step.step}. ${step.description}",
-              // style: Theme.of(context).textTheme.bodyMedium,
-              style: const TextStyle(fontSize: 16.0, height: 1.5)),
+          child: Text(
+            "${step.step}. ${step.description}",
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
         ),
         if (!isLastStep) const Divider()
       ],
