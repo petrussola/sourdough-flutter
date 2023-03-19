@@ -8,25 +8,31 @@ class CalculatorPage extends StatefulWidget {
 }
 
 class _CalculatorPageState extends State<CalculatorPage> {
-  var _litres = 1.0;
+  var _starterGrams = 100.0;
 
   Map<String, Map<String, dynamic>> proportions = {
-    "sugar": {
-      "quantity": 57.89,
+    "flour": {
+      "quantity": 4.50,
       "unit": "gr",
     },
-    "tea": {
-      "quantity": 4.21,
+    "water": {
+      "quantity": 3.25,
       "unit": "gr",
     },
-    "vinegar": {
-      "quantity": 3.16,
-      "unit": "tea spoons",
+    "salt": {
+      "quantity": 0.11,
+      "unit": "gr",
+    },
+    "honey": {
+      "quantity": 0.10,
+      "unit": "gr",
     },
   };
 
-  void onSelectLitres(double value) {
-    setState(() => {_litres = value});
+  void onSelectStarterGrams(double value) {
+    setState(() => {
+          _starterGrams = value,
+        });
   }
 
   @override
@@ -40,16 +46,16 @@ class _CalculatorPageState extends State<CalculatorPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("$_litres ${_litres > 1 ? "litres" : "litre"} of water",
+              Text("$_starterGrams grams of starter",
                   style: Theme.of(context).textTheme.headlineMedium),
             ],
           ),
           Slider.adaptive(
-            value: _litres,
-            min: 1,
-            max: 6,
-            divisions: 20,
-            onChanged: onSelectLitres,
+            value: _starterGrams,
+            min: 0,
+            max: 500,
+            divisions: 500,
+            onChanged: onSelectStarterGrams,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
@@ -57,19 +63,24 @@ class _CalculatorPageState extends State<CalculatorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Ingredient(
-                  name: "Sugar",
-                  amount: _litres * (proportions["sugar"]!["quantity"]),
-                  unit: proportions["sugar"]!["unit"],
+                  name: "Flour",
+                  amount: _starterGrams * (proportions["flour"]!["quantity"]),
+                  unit: proportions["flour"]!["unit"],
                 ),
                 Ingredient(
-                  name: "Tea",
-                  amount: _litres * (proportions["tea"]!["quantity"]),
-                  unit: proportions["tea"]!["unit"],
+                  name: "Water",
+                  amount: _starterGrams * (proportions["water"]!["quantity"]),
+                  unit: proportions["water"]!["unit"],
                 ),
                 Ingredient(
-                  name: "Vinegar",
-                  amount: _litres * (proportions["vinegar"]!["quantity"]),
-                  unit: proportions["vinegar"]!["unit"],
+                  name: "Salt",
+                  amount: _starterGrams * (proportions["salt"]!["quantity"]),
+                  unit: proportions["salt"]!["unit"],
+                ),
+                Ingredient(
+                  name: "Honey (optional)",
+                  amount: _starterGrams * (proportions["honey"]!["quantity"]),
+                  unit: proportions["honey"]!["unit"],
                 ),
               ],
             ),
