@@ -3,10 +3,9 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:sourdough_app/datamanager.dart';
 
 import 'package:sourdough_app/pages/calculator_page.dart';
-import 'package:sourdough_app/pages/starter_page.dart';
 
 import 'envvariables.dart';
-import 'pages/bread_page.dart';
+import 'pages/receipe_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -137,11 +136,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     switch (selectedIndex) {
       case 0:
-        currentPage = const IngredientsPage();
+        currentPage =
+            ReceipePage(dataManager: dataManager, routeIndex: selectedIndex);
         pageTitle = "Starter receipe";
         break;
       case 1:
-        currentPage = ReceipePage(dataManager: dataManager);
+        currentPage =
+            ReceipePage(dataManager: dataManager, routeIndex: selectedIndex);
         pageTitle = "Bread receipe";
         break;
       case 2:
@@ -234,36 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 )
               : null,
-      body: _isBottomBannerAdLoaded
-          ? currentPage
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Welcome to the Sourdough Making Toolkit app!',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Loading content...',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(),
-                  )
-                ],
-              ),
-            ),
+      body: currentPage,
     );
   }
 }
