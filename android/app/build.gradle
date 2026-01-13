@@ -43,8 +43,8 @@ if (project.hasProperty('dart-defines')) {
 
 android {
     namespace "com.sourdough_making_app"
-    compileSdk 34
-    ndkVersion flutter.ndkVersion
+    compileSdk 35
+    ndkVersion "27.0.12077973"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -65,9 +65,9 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion 21
-        targetSdk 34
+        targetSdk 35
         versionCode flutterVersionCode.toInteger()
-        versionName 
+        versionName flutterVersionName
         manifestPlaceholders['APPLICATION_ID'] = dartEnvironmentVariables.APPLICATION_ID
     }
 
@@ -88,6 +88,12 @@ android {
            }
        }
    }
+
+   packaging {
+       jniLibs {
+           useLegacyPackaging false
+       }
+   }
 }
 
 flutter {
@@ -96,5 +102,5 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.android.gms:play-services-ads:21.4.0'
+    implementation 'com.google.android.gms:play-services-ads:23.5.0'
 }
