@@ -72,3 +72,4 @@ migrate_working_dir/
 *.xml
 *.jks
 .env.example
+android/admob.properties

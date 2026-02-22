@@ -71,10 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     _anchoredAdaptiveAd = BannerAd(
-      adUnitId: const String.fromEnvironment(
-        'PAGE_BOTTOM_AD_ID',
-        defaultValue: bannerAdTestId,
-      ),
+      adUnitId: pageBottomAdId,
       size: size,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -101,8 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _loadDrawerAd() {
     _adBannerDrawer = BannerAd(
-      adUnitId: const String.fromEnvironment("AD_BANNER_DRAWER_ID",
-          defaultValue: bannerAdTestId),
+      adUnitId: drawerAdId,
       size: AdSize.mediumRectangle,
       request: const AdRequest(),
       listener: BannerAdListener(

@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.sourdough_app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="Sourdough Making Toolkit"
@@ -31,10 +30,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- TODO: replace with production id -->
-        <!-- https://developers.google.com/admob/android/test-ads -->
+        <!-- AdMob App ID - set in android/admob.properties -->
         <meta-data 
           android:name="com.google.android.gms.ads.APPLICATION_ID"
-          android:value="${APPLICATION_ID}" />
+          android:value="${ADMOB_APP_ID}" />
     </application>
 </manifest>
