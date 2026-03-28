@@ -73,3 +73,4 @@ migrate_working_dir/
 *.jks
 .env.example
 android/admob.properties
+.DS_Store

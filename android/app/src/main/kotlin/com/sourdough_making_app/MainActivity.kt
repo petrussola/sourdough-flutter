@@ -1,4 +1,4 @@
-package com.example.sourdough_app
+package com.sourdough_making_app
 
 import io.flutter.embedding.android.FlutterActivity
 
