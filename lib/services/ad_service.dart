@@ -1,14 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sourdough_app/envvariables.dart';
 
 class AdService {
   AdService._();
   static final AdService instance = AdService._();
-
-  static const _kLastAppOpenShownMs = 'lastAppOpenShownMs';
-  static const _appOpenFrequency = Duration(days: 7);
 
   // ── Banner ──
   final ValueNotifier<bool> bannerVisible = ValueNotifier(true);
@@ -20,16 +16,27 @@ class AdService {
   int _appOpenRetries = 0;
   bool _showOnLoad = false;
 
+  // ── Interstitial ──
+  InterstitialAd? _interstitialAd;
+  bool _interstitialShowing = false;
+  int _tabSwitchCount = 0;
+  static const _tabSwitchesPerAd = 3;
+
+  // ── Native ──
+  final List<NativeAd> _nativeAdPool = [];
+  final ValueNotifier<int> nativeAdsReady = ValueNotifier(0);
+  static const _nativeAdPoolSize = 2;
+
   Future<void> init({bool showAppOpenOnLoad = false}) async {
     if (kIsWeb) return;
     _showOnLoad = showAppOpenOnLoad;
     _loadAppOpen();
+    _loadInterstitial();
+    _loadNativeAdPool();
   }
 
   // ── Banner ──
 
-  /// Creates and loads an adaptive collapsible banner ad.
-  /// Must be called with a BuildContext to get screen width.
   Future<void> loadBanner(double screenWidth) async {
     final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
       screenWidth.truncate(),
@@ -102,22 +109,107 @@ class AdService {
     Future.delayed(delay, _loadAppOpen);
   }
 
-  /// Shows the app open ad if loaded and 7+ days since last show.
-  Future<void> tryShowAppOpen() async {
+  /// Shows the app open ad if one is loaded. Frequency capping is managed
+  /// server-side in the AdMob console.
+  void tryShowAppOpen() {
     if (_appOpenAd == null) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    final lastShown = prefs.getInt(_kLastAppOpenShownMs) ?? 0;
-    final now = DateTime.now().millisecondsSinceEpoch;
-
-    if (now - lastShown < _appOpenFrequency.inMilliseconds) return;
-
-    await prefs.setInt(_kLastAppOpenShownMs, now);
     _appOpenAd!.show();
+  }
+
+  // ── Interstitial ──
+
+  void _loadInterstitial() {
+    InterstitialAd.load(
+      adUnitId: interstitialAdId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              _interstitialShowing = false;
+              ad.dispose();
+              _interstitialAd = null;
+              _loadInterstitial();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              _interstitialShowing = false;
+              ad.dispose();
+              _interstitialAd = null;
+              _loadInterstitial();
+            },
+          );
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('Interstitial failed to load: ${error.message}');
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  /// Call on every tab switch. Shows an interstitial every [_tabSwitchesPerAd] switches.
+  void onTabSwitch() {
+    if (kIsWeb) return;
+    _tabSwitchCount++;
+    if (_tabSwitchCount >= _tabSwitchesPerAd) {
+      _tabSwitchCount = 0;
+      _tryShowInterstitial();
+    }
+  }
+
+  void _tryShowInterstitial() {
+    if (_interstitialAd == null || _interstitialShowing) return;
+    _interstitialShowing = true;
+    _interstitialAd!.show();
+  }
+
+  // ── Native ──
+
+  void _loadNativeAdPool() {
+    for (var i = _nativeAdPool.length; i < _nativeAdPoolSize; i++) {
+      _loadOneNativeAd();
+    }
+  }
+
+  void _loadOneNativeAd() {
+    NativeAd(
+      adUnitId: nativeAdId,
+      request: const AdRequest(),
+      listener: NativeAdListener(
+        onAdLoaded: (ad) {
+          _nativeAdPool.add(ad as NativeAd);
+          nativeAdsReady.value = _nativeAdPool.length;
+        },
+        onAdFailedToLoad: (ad, error) {
+          debugPrint('Native ad failed to load: ${error.message}');
+          ad.dispose();
+        },
+      ),
+      nativeTemplateStyle: NativeTemplateStyle(
+        templateType: TemplateType.small,
+      ),
+    ).load();
+  }
+
+  /// Returns a loaded native ad, or null if none available.
+  /// The caller is responsible for displaying it; the ad is removed from the pool
+  /// and a new one is loaded to replace it.
+  NativeAd? getNativeAd() {
+    if (_nativeAdPool.isEmpty) return null;
+    final ad = _nativeAdPool.removeAt(0);
+    nativeAdsReady.value = _nativeAdPool.length;
+    _loadOneNativeAd();
+    return ad;
   }
 
   void dispose() {
     bannerAd?.dispose();
     _appOpenAd?.dispose();
+    _interstitialAd?.dispose();
+    for (final ad in _nativeAdPool) {
+      ad.dispose();
+    }
+    _nativeAdPool.clear();
   }
 }

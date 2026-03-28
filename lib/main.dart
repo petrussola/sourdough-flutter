@@ -122,6 +122,9 @@ class _MyHomePageState extends State<MyHomePage> {
           NavigationBar(
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) {
+              if (index != _selectedIndex) {
+                AdService.instance.onTabSwitch();
+              }
               setState(() => _selectedIndex = index);
             },
             destinations: const [
