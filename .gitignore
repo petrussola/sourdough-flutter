@@ -74,3 +74,4 @@ migrate_working_dir/
 .env.example
 android/admob.properties
 .DS_Store
+plans/
