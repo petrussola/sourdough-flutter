@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sourdough_app/theme/app_spacing.dart';
+import 'package:sourdough_app/widgets/ingredient_row.dart';
 
 class BreadCalculator extends StatefulWidget {
   const BreadCalculator({super.key});
@@ -8,106 +10,71 @@ class BreadCalculator extends StatefulWidget {
 }
 
 class _BreadCalculatorState extends State<BreadCalculator> {
-  var _starterGrams = 100.0;
-
-  Map<String, Map<String, dynamic>> proportions = {
-    "flour": {
-      "quantity": 4.50,
-      "unit": "gr",
-    },
-    "water": {
-      "quantity": 3.25,
-      "unit": "gr",
-    },
-    "salt": {
-      "quantity": 0.11,
-      "unit": "gr",
-    },
-    "honey": {
-      "quantity": 0.10,
-      "unit": "gr",
-    },
-  };
-
-  void onSelectStarterGrams(double value) {
-    setState(() => {
-          _starterGrams = value,
-        });
-  }
+  var _grams = 100.0;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("$_starterGrams active sourdough",
-                  style: Theme.of(context).textTheme.headlineMedium),
-            ],
-          ),
-          Slider.adaptive(
-            value: _starterGrams,
-            min: 0,
-            max: 500,
-            divisions: 500,
-            onChanged: onSelectStarterGrams,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Ingredient(
-                  name: "Flour",
-                  amount: _starterGrams * (proportions["flour"]!["quantity"]),
-                  unit: proportions["flour"]!["unit"],
-                ),
-                Ingredient(
-                  name: "Water",
-                  amount: _starterGrams * (proportions["water"]!["quantity"]),
-                  unit: proportions["water"]!["unit"],
-                ),
-                Ingredient(
-                  name: "Salt",
-                  amount: _starterGrams * (proportions["salt"]!["quantity"]),
-                  unit: proportions["salt"]!["unit"],
-                ),
-                Ingredient(
-                  name: "Honey (optional)",
-                  amount: _starterGrams * (proportions["honey"]!["quantity"]),
-                  unit: proportions["honey"]!["unit"],
-                ),
+                Icon(Icons.bakery_dining, color: theme.colorScheme.primary),
+                const SizedBox(width: AppSpacing.sm),
+                Text('Bread Proportions',
+                    style: theme.textTheme.titleLarge),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            Center(
+              child: Text(
+                '${_grams.round()}g active sourdough',
+                style: theme.textTheme.headlineMedium,
+              ),
+            ),
+            Semantics(
+              label: 'Active sourdough grams: ${_grams.round()}',
+              child: Slider(
+                value: _grams,
+                min: 0,
+                max: 500,
+                divisions: 500,
+                label: '${_grams.round()}g',
+                onChanged: (v) => setState(() => _grams = v),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            IngredientRow(
+              name: 'Flour',
+              amount: _grams * 4.5,
+              unit: 'g',
+              icon: Icons.grain,
+            ),
+            IngredientRow(
+              name: 'Water',
+              amount: _grams * 3.25,
+              unit: 'g',
+              icon: Icons.water_drop,
+            ),
+            IngredientRow(
+              name: 'Salt',
+              amount: _grams * 0.11,
+              unit: 'g',
+              icon: Icons.scatter_plot,
+            ),
+            IngredientRow(
+              name: 'Honey (optional)',
+              amount: _grams * 0.10,
+              unit: 'g',
+              icon: Icons.local_dining,
+            ),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class Ingredient extends StatelessWidget {
-  final String name;
-  final double amount;
-  final String unit;
-
-  const Ingredient(
-      {super.key,
-      required this.name,
-      required this.amount,
-      required this.unit});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text("$name: ${amount.round()} $unit",
-          style: const TextStyle(fontSize: 18.0)),
     );
   }
 }

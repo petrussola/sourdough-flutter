@@ -1,265 +1,149 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:sourdough_app/datamanager.dart';
 import 'package:sourdough_app/pages/calculator_page.dart';
+import 'package:sourdough_app/pages/onboarding_page.dart';
+import 'package:sourdough_app/services/ad_service.dart';
+import 'package:sourdough_app/services/consent_service.dart';
+import 'package:sourdough_app/theme/app_theme.dart';
 
-import 'envvariables.dart';
-import 'pages/receipe_page.dart';
+import 'pages/recipe_page.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MobileAds.instance.initialize();
+  await ConsentService.instance.initializeWithConsent();
+  await AdService.instance.init(showAppOpenOnLoad: true);
 
-  runApp(const MyApp());
+  final showOnboarding = await OnboardingPage.shouldShow();
+
+  runApp(MyApp(showOnboarding: showOnboarding));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  final bool showOnboarding;
+
+  const MyApp({super.key, required this.showOnboarding});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late bool _showOnboarding;
+
+  @override
+  void initState() {
+    super.initState();
+    _showOnboarding = widget.showOnboarding;
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sourdough Making Toolkit',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: const MyHomePage(title: 'Sourdough Making Toolkit'),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
+      home: _showOnboarding
+          ? OnboardingPage(
+              onComplete: () {
+                setState(() => _showOnboarding = false);
+              },
+            )
+          : const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var dataManager = DataManager();
-  var selectedIndex = 0;
-  BannerAd? _anchoredAdaptiveAd;
-  BannerAd? _adBannerDrawer;
-  bool _isBottomBannerAdLoaded = false;
-  bool _isDrawerAdLoaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _loadDrawerAd();
-  }
+  final _dataManager = DataManager();
+  var _selectedIndex = 0;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    _loadBottomBannerAd();
-  }
-
-  Future<void> _loadBottomBannerAd() async {
-    // Get an AnchoredAdaptiveBannerAdSize before loading the ad.
-    final AnchoredAdaptiveBannerAdSize? size =
-        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-            MediaQuery.of(context).size.width.truncate());
-
-    if (size == null) {
-      return;
+    if (!kIsWeb) {
+      AdService.instance.loadBanner(MediaQuery.of(context).size.width);
     }
-
-    _anchoredAdaptiveAd = BannerAd(
-      adUnitId: pageBottomAdId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (Ad ad) {
-          setState(() {
-            // When the ad is loaded, get the ad size and use it to set
-            // the height of the ad container.
-            _anchoredAdaptiveAd = ad as BannerAd;
-            _isBottomBannerAdLoaded = true;
-          });
-        },
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          ad.dispose();
-
-          _isBottomBannerAdLoaded = true;
-        },
-      ),
-    );
-
-    _anchoredAdaptiveAd!.load();
-
-    return;
   }
 
-  _loadDrawerAd() {
-    _adBannerDrawer = BannerAd(
-      adUnitId: drawerAdId,
-      size: AdSize.mediumRectangle,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (Ad ad) {
-          setState(
-            () {
-              // When the ad is loaded, get the ad size and use it to set
-              // the height of the ad container.
-              _adBannerDrawer = ad as BannerAd;
-              _isDrawerAdLoaded = true;
-            },
-          );
-        },
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          ad.dispose();
-
-          _isDrawerAdLoaded = true;
-        },
-      ),
-    );
-
-    _adBannerDrawer?.load();
-
-    return;
-  }
+  static const _pageTitles = [
+    'Starter Recipe',
+    'Bread Recipe',
+    'Calculator',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    late Widget currentPage;
-    late String pageTitle;
-
-    switch (selectedIndex) {
-      case 0:
-        currentPage =
-            ReceipePage(dataManager: dataManager, routeIndex: selectedIndex);
-        pageTitle = "Starter receipe";
-        break;
-      case 1:
-        currentPage =
-            ReceipePage(dataManager: dataManager, routeIndex: selectedIndex);
-        pageTitle = "Bread receipe";
-        break;
-      case 2:
-        currentPage = const CalculatorPage();
-        pageTitle = "Proportions";
-        break;
-    }
-
-    tapHandler(int index, BuildContext context) {
-      setState(
-        () {
-          selectedIndex = index;
-        },
-      );
-      Navigator.pop(context);
-    }
+    final pages = [
+      RecipePage(dataManager: _dataManager, routeIndex: 0),
+      RecipePage(dataManager: _dataManager, routeIndex: 1),
+      const CalculatorPage(),
+    ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitle),
+        title: Text(_pageTitles[_selectedIndex]),
       ),
-      drawer: Drawer(
-        child: Column(
-          children: [
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.green,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32.0),
-                child: Text(
-                  widget.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  DrawerListItem(
-                    index: 0,
-                    icon: Icons.restaurant,
-                    name: "Starter receipe",
-                    onTap: (index) => {
-                      tapHandler(index, context),
-                    },
-                  ),
-                  DrawerListItem(
-                    index: 1,
-                    icon: Icons.menu_book,
-                    name: "Bread receipe",
-                    onTap: (index) => {
-                      tapHandler(index, context),
-                    },
-                  ),
-                  DrawerListItem(
-                    index: 2,
-                    icon: Icons.calculate,
-                    name: "Proportions",
-                    onTap: (index) => {
-                      tapHandler(index, context),
-                    },
-                  ),
-                ],
-              ),
-            ),
-            if (_adBannerDrawer != null && _isDrawerAdLoaded)
-              Container(
-                alignment: Alignment.center,
-                width: _adBannerDrawer?.size.width.toDouble(),
-                height: _adBannerDrawer?.size.height.toDouble(),
-                child: AdWidget(
-                  ad: _adBannerDrawer!,
-                ),
-              ),
-          ],
+      body: SafeArea(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: KeyedSubtree(
+            key: ValueKey(_selectedIndex),
+            child: pages[_selectedIndex],
+          ),
         ),
       ),
-      bottomNavigationBar:
-          _anchoredAdaptiveAd != null && _isBottomBannerAdLoaded
-              ? Container(
-                  alignment: Alignment.center,
-                  width: _anchoredAdaptiveAd!.size.width.toDouble(),
-                  height: _anchoredAdaptiveAd!.size.height.toDouble(),
-                  child: AdWidget(
-                    ad: _anchoredAdaptiveAd!,
-                  ),
-                )
-              : null,
-      body: currentPage,
-    );
-  }
-}
-
-class DrawerListItem extends StatelessWidget {
-  final int index;
-  final IconData icon;
-  final String name;
-  final Function(int index) onTap;
-
-  const DrawerListItem(
-      {super.key,
-      required this.index,
-      required this.icon,
-      required this.name,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(
-        name,
-        style: const TextStyle(
-          fontSize: 16,
-        ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!kIsWeb)
+            ValueListenableBuilder<bool>(
+              valueListenable: AdService.instance.bannerLoaded,
+              builder: (context, loaded, _) {
+                final ad = AdService.instance.bannerAd;
+                if (!loaded || ad == null) return const SizedBox.shrink();
+                return SizedBox(
+                  width: ad.size.width.toDouble(),
+                  height: ad.size.height.toDouble(),
+                  child: AdWidget(ad: ad),
+                );
+              },
+            ),
+          NavigationBar(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() => _selectedIndex = index);
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.science_outlined),
+                selectedIcon: Icon(Icons.science),
+                label: 'Starter',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.bakery_dining_outlined),
+                selectedIcon: Icon(Icons.bakery_dining),
+                label: 'Bread',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.calculate_outlined),
+                selectedIcon: Icon(Icons.calculate),
+                label: 'Calculator',
+              ),
+            ],
+          ),
+        ],
       ),
-      onTap: () => onTap(index),
     );
   }
 }

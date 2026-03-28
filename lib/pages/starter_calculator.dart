@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sourdough_app/theme/app_spacing.dart';
+import 'package:sourdough_app/widgets/ingredient_row.dart';
 
 class StarterCalculator extends StatefulWidget {
   const StarterCalculator({super.key});
@@ -8,88 +10,59 @@ class StarterCalculator extends StatefulWidget {
 }
 
 class _StarterCalculatorState extends State<StarterCalculator> {
-  var _starterGrams = 40.0;
-
-  Map<String, Map<String, dynamic>> proportions = {
-    "flour": {
-      "quantity": 1.00,
-      "unit": "gr",
-    },
-    "water": {
-      "quantity": 1.00,
-      "unit": "gr",
-    },
-  };
-
-  void onSelectStarterGrams(double value) {
-    setState(() => {
-          _starterGrams = value,
-        });
-  }
+  var _grams = 40.0;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("$_starterGrams grams of starter",
-                  style: Theme.of(context).textTheme.headlineMedium),
-            ],
-          ),
-          Slider.adaptive(
-            value: _starterGrams,
-            min: 0,
-            max: 250,
-            divisions: 250,
-            onChanged: onSelectStarterGrams,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, top: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Ingredient(
-                  name: "Flour",
-                  amount: _starterGrams * (proportions["flour"]!["quantity"]),
-                  unit: proportions["flour"]!["unit"],
-                ),
-                Ingredient(
-                  name: "Water",
-                  amount: _starterGrams * (proportions["water"]!["quantity"]),
-                  unit: proportions["water"]!["unit"],
-                ),
+                Icon(Icons.science, color: theme.colorScheme.primary),
+                const SizedBox(width: AppSpacing.sm),
+                Text('Starter Proportions',
+                    style: theme.textTheme.titleLarge),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            Center(
+              child: Text(
+                '${_grams.round()}g of starter',
+                style: theme.textTheme.headlineMedium,
+              ),
+            ),
+            Semantics(
+              label: 'Starter grams: ${_grams.round()}',
+              child: Slider(
+                value: _grams,
+                min: 0,
+                max: 250,
+                divisions: 250,
+                label: '${_grams.round()}g',
+                onChanged: (v) => setState(() => _grams = v),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            IngredientRow(
+              name: 'Flour',
+              amount: _grams * 1.0,
+              unit: 'g',
+              icon: Icons.grain,
+            ),
+            IngredientRow(
+              name: 'Water',
+              amount: _grams * 1.0,
+              unit: 'g',
+              icon: Icons.water_drop,
+            ),
+          ],
+        ),
       ),
-    );
-  }
-}
-
-class Ingredient extends StatelessWidget {
-  final String name;
-  final double amount;
-  final String unit;
-
-  const Ingredient(
-      {super.key,
-      required this.name,
-      required this.amount,
-      required this.unit});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text("$name: ${amount.round()} $unit",
-          style: const TextStyle(fontSize: 18.0)),
     );
   }
 }

@@ -1,36 +1,36 @@
-class ReceipeType {
+class RecipeType {
   String name;
-  List<ReceipeStep> steps;
+  List<RecipeStep> steps;
 
-  ReceipeType({
+  RecipeType({
     required this.name,
     required this.steps,
   });
 
-  factory ReceipeType.fromJson(Map<String, dynamic> json) {
+  factory RecipeType.fromJson(Map<String, dynamic> json) {
     var stepsJson = json['steps'] as Iterable<dynamic>;
-    var steps = stepsJson.map((step) => ReceipeStep.fromJson(step)).toList();
+    var steps = stepsJson.map((step) => RecipeStep.fromJson(step)).toList();
     
-    return ReceipeType(
+    return RecipeType(
       name: json['name'] as String,
       steps: steps,
     );
   }
 }
 
-class ReceipeStep {
+class RecipeStep {
   int id;
   String step;
   String description;
 
-  ReceipeStep({
+  RecipeStep({
     required this.id,
     required this.step,
     required this.description,
   });
 
-  factory ReceipeStep.fromJson(Map<String, dynamic> json) {
-    return ReceipeStep(
+  factory RecipeStep.fromJson(Map<String, dynamic> json) {
+    return RecipeStep(
       id: json['id'] as int,
       step: json['step'] as String,
       description: json['description'] as String,

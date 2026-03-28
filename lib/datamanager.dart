@@ -1,7 +1,7 @@
 import 'datamodel.dart';
 
 class DataManager {
-  List<ReceipeType>? _receipes;
+  List<RecipeType>? _recipes;
 
   static const List<Map<String, dynamic>> _staticData = [
     {
@@ -116,17 +116,17 @@ class DataManager {
     }
   ];
 
-  fetchReceipes() {
-    _receipes = [];
+  fetchRecipes() {
+    _recipes = [];
     for (var json in _staticData) {
-      _receipes?.add(ReceipeType.fromJson(json));
+      _recipes?.add(RecipeType.fromJson(json));
     }
   }
 
-  Future<List<ReceipeType>> getReceipes() async {
-    if (_receipes == null) {
-      fetchReceipes();
+  Future<List<RecipeType>> getRecipes() async {
+    if (_recipes == null) {
+      fetchRecipes();
     }
-    return _receipes!;
+    return _recipes!;
   }
 }

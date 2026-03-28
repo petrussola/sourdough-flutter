@@ -67,6 +67,13 @@ lib/generated_plugin_registrant.dart
 
 # End of https://www.toptal.com/developers/gitignore/api/flutter
 
+# macOS generated
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Windows generated
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugins.cmake
+
 envvariables.dart
 migrate_working_dir/
 *.xml
