@@ -13,7 +13,6 @@
 .pub/
 build/
 coverage/
-lib/generated_plugin_registrant.dart
 # For library packages, don’t commit the pubspec.lock file.
 # Regenerating the pubspec.lock file lets you test your package against the latest compatible versions of its dependencies.
 # See https://dart.dev/guides/libraries/private-files#pubspeclock
@@ -80,5 +79,9 @@ migrate_working_dir/
 *.jks
 .env.example
 android/admob.properties
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
 .DS_Store
 plans/
+screenshots_raw/
+store_screenshots/

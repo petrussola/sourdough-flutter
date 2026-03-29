@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -12,6 +13,7 @@ import 'pages/recipe_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) await Firebase.initializeApp();
   await ConsentService.instance.initializeWithConsent();
   await AdService.instance.init(showAppOpenOnLoad: true);
 
