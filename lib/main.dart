@@ -14,8 +14,9 @@ import 'pages/recipe_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!kIsWeb) await Firebase.initializeApp();
-  await ConsentService.instance.initializeWithConsent();
-  await AdService.instance.init(showAppOpenOnLoad: true);
+  if (await ConsentService.instance.initializeWithConsent()) {
+    await AdService.instance.init();
+  }
 
   final showOnboarding = await OnboardingPage.shouldShow();
 
@@ -66,14 +67,36 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final _dataManager = DataManager();
   var _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) AdService.instance.showAppOpenWhenReady();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      AdService.instance.tryShowAppOpen();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!kIsWeb) {
+    if (AdService.instance.isInitialized) {
       AdService.instance.loadBanner(MediaQuery.of(context).size.width);
     }
   }
@@ -95,12 +118,35 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_pageTitles[_selectedIndex]),
+        actions: [
+          if (ConsentService.instance.privacyOptionsRequired)
+            IconButton(
+              tooltip: 'Privacy options',
+              icon: const Icon(Icons.privacy_tip_outlined),
+              onPressed: () async {
+                final canRequestAds =
+                    await ConsentService.instance.showPrivacyOptions();
+                if (!mounted) return;
+                if (!canRequestAds) {
+                  AdService.instance.dispose();
+                } else if (!AdService.instance.isInitialized) {
+                  await AdService.instance.init();
+                  if (!mounted) return;
+                  AdService.instance
+                      .loadBanner(MediaQuery.of(this.context).size.width);
+                }
+                setState(() {});
+              },
+            ),
+        ],
       ),
       body: SafeArea(
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
+          duration: AdService.instance.isInitialized
+              ? const Duration(milliseconds: 300)
+              : Duration.zero,
           child: KeyedSubtree(
-            key: ValueKey(_selectedIndex),
+            key: ValueKey((_selectedIndex, AdService.instance.isInitialized)),
             child: pages[_selectedIndex],
           ),
         ),
@@ -108,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!kIsWeb)
+          if (AdService.instance.isInitialized)
             ValueListenableBuilder<bool>(
               valueListenable: AdService.instance.bannerLoaded,
               builder: (context, loaded, _) {

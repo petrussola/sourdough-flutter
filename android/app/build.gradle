@@ -58,7 +58,7 @@ android {
     defaultConfig {
         applicationId "com.sourdough_making_app"
         minSdkVersion flutter.minSdkVersion
-        targetSdk 35
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         manifestPlaceholders["ADMOB_APP_ID"] = admobProperties['ADMOB_APP_ID'] ?: ""

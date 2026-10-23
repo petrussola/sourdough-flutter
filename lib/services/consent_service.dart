@@ -6,49 +6,58 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class ConsentService {
   ConsentService._();
   static final ConsentService instance = ConsentService._();
+  bool privacyOptionsRequired = false;
 
-  /// Requests UMP consent info, shows the form if needed, then initializes
-  /// MobileAds. On any error, MobileAds is still initialized (non-personalized
-  /// ads will be served).
-  Future<void> initializeWithConsent() async {
-    if (kIsWeb) return;
+  /// Start ads only when UMP says requests are permitted.
+  Future<bool> initializeWithConsent() async {
+    if (kIsWeb) return false;
 
+    try {
+      return await _requestConsentAndInitialize();
+    } catch (error) {
+      debugPrint('Ad consent initialization failed: $error');
+      return false;
+    }
+  }
+
+  Future<bool> _requestConsentAndInitialize() async {
     final completer = Completer<void>();
 
     ConsentInformation.instance.requestConsentInfoUpdate(
       ConsentRequestParameters(),
-      () async {
-        if (await ConsentInformation.instance.isConsentFormAvailable()) {
-          _showConsentForm(() => _initSdk(completer));
-        } else {
-          _initSdk(completer);
-        }
-      },
+      () => completer.complete(),
       (error) {
         debugPrint('UMP consent error: ${error.message}');
-        _initSdk(completer);
+        completer.complete();
       },
     );
 
-    return completer.future;
+    await completer.future;
+    final formDone = Completer<void>();
+    await ConsentForm.loadAndShowConsentFormIfRequired((error) {
+      if (error != null) debugPrint('Consent form error: ${error.message}');
+      formDone.complete();
+    });
+    await formDone.future;
+    privacyOptionsRequired = await ConsentInformation.instance
+            .getPrivacyOptionsRequirementStatus() ==
+        PrivacyOptionsRequirementStatus.required;
+    if (!await ConsentInformation.instance.canRequestAds()) return false;
+    await MobileAds.instance.initialize();
+    return true;
   }
 
-  void _showConsentForm(VoidCallback onDone) {
-    ConsentForm.loadConsentForm(
-      (form) => form.show((error) {
+  Future<bool> showPrivacyOptions() async {
+    try {
+      await ConsentForm.showPrivacyOptionsForm((error) {
         if (error != null) {
-          debugPrint('Consent form error: ${error.message}');
+          debugPrint('Privacy options error: ${error.message}');
         }
-        onDone();
-      }),
-      (error) {
-        debugPrint('Consent form load error: ${error.message}');
-        onDone();
-      },
-    );
-  }
-
-  void _initSdk(Completer<void> completer) {
-    MobileAds.instance.initialize().then((_) => completer.complete());
+      });
+      return await ConsentInformation.instance.canRequestAds();
+    } catch (error) {
+      debugPrint('Privacy options check failed: $error');
+      return false;
+    }
   }
 }

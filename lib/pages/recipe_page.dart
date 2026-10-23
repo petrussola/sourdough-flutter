@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:sourdough_app/datamanager.dart';
@@ -28,17 +27,8 @@ class RecipePage extends StatefulWidget {
 }
 
 class _RecipePageState extends State<RecipePage> {
-  final List<NativeAd> _activeNativeAds = [];
   List<_ListItem>? _cachedItems;
   int? _cachedStepCount;
-
-  @override
-  void dispose() {
-    for (final ad in _activeNativeAds) {
-      ad.dispose();
-    }
-    super.dispose();
-  }
 
   List<_ListItem> _buildItems(int stepCount) {
     // Return cached list if step count hasn't changed (avoids duplicate ad
@@ -50,7 +40,9 @@ class _RecipePageState extends State<RecipePage> {
     final items = <_ListItem>[];
     for (var i = 0; i < stepCount; i++) {
       items.add(_StepItem(i));
-      if ((i + 1) % _adInterval == 0 && i < stepCount - 1 && !kIsWeb) {
+      if ((i + 1) % _adInterval == 0 &&
+          i < stepCount - 1 &&
+          AdService.instance.isInitialized) {
         items.add(_NativeAdItem());
       }
     }
@@ -91,9 +83,7 @@ class _RecipePageState extends State<RecipePage> {
                   isLastStep: item.stepIndex == steps.length - 1,
                 );
               } else {
-                return _NativeAdWidget(
-                  onAdObtained: (ad) => _activeNativeAds.add(ad),
-                );
+                return _NativeAdWidget(key: ValueKey(index));
               }
             },
           );
@@ -128,9 +118,7 @@ class _NativeAdItem extends _ListItem {}
 // ── Native ad widget ──
 
 class _NativeAdWidget extends StatefulWidget {
-  final void Function(NativeAd ad) onAdObtained;
-
-  const _NativeAdWidget({required this.onAdObtained});
+  const _NativeAdWidget({super.key});
 
   @override
   State<_NativeAdWidget> createState() => _NativeAdWidgetState();
@@ -138,14 +126,28 @@ class _NativeAdWidget extends StatefulWidget {
 
 class _NativeAdWidgetState extends State<_NativeAdWidget> {
   NativeAd? _ad;
+  bool _takingAd = false;
 
   @override
   void initState() {
     super.initState();
-    _ad = AdService.instance.getNativeAd();
-    if (_ad != null) {
-      widget.onAdObtained(_ad!);
-    }
+    _takeAd();
+    AdService.instance.nativeAdsReady.addListener(_takeAd);
+  }
+
+  void _takeAd() {
+    if (!mounted || _ad != null || _takingAd) return;
+    _takingAd = true;
+    final ad = AdService.instance.getNativeAd();
+    if (ad != null) setState(() => _ad = ad);
+    _takingAd = false;
+  }
+
+  @override
+  void dispose() {
+    AdService.instance.nativeAdsReady.removeListener(_takeAd);
+    _ad?.dispose();
+    super.dispose();
   }
 
   @override
